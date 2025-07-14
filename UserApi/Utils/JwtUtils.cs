@@ -14,7 +14,7 @@ namespace UserApi.Utils
 
             var claim = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(ClaimTypes.Name, user.UserName),
 
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 
@@ -22,12 +22,6 @@ namespace UserApi.Utils
 
                 new Claim(ClaimTypes.Role, role)
             };
-            /*
-            foreach (var role in roles)
-            {
-                claim.Add(new Claim(ClaimTypes.Role, role));
-            }
-            */
             var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
             var creds = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(

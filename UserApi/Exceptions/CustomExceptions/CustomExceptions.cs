@@ -18,4 +18,19 @@
     {
         public EmailAlreadyInUseException(string message) : base(message) { }
     }
+
+    public class PasswordNotMatch : Exception
+    {
+        public PasswordNotMatch(string message) : base(message) { }
+    }
+    public class PasswordNotCorrect : Exception
+    {
+        public PasswordNotCorrect(string message) : base(message) { }
+    }
+
+    public class RoleSelectedWrong : Exception
+    {
+        public RoleSelectedWrong(string message) : base(message) { }
+    }
+
 }

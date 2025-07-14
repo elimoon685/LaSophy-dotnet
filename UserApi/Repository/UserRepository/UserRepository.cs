@@ -52,10 +52,28 @@ namespace UserApi.Repository.UserRepository
             return await _laSophyDbContext.User.FirstOrDefaultAsync(u => u.Email==eamil);
         }
 
+        public async Task<User> GetUserInfoByIdAsync(string id)
+        {
+            return await _laSophyDbContext.User.FirstAsync(u => u.Id == id);
+        }
+
+
         public async Task<string> GetUserRolesAsync(User user)
         {
             var roles= await _userManager.GetRolesAsync(user);
             return roles.FirstOrDefault();
+        }
+
+        public async Task<IdentityResult> ResetPasswordAsync(User user, string token, string newPassword)
+        {
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            return result;
+        }
+
+        public async Task UpdateAsync(User user)
+        {
+           _laSophyDbContext.User.Update(user);
+            await _laSophyDbContext.SaveChangesAsync();
         }
     }
 }

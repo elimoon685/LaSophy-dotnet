@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using AutoMapper;
 using Azure.Messaging.ServiceBus;
 using MassTransit;
 using MassTransit.Middleware;
@@ -9,6 +10,7 @@ using UserApi.DTO;
 using UserApi.Exceptions.CustomExceptions;
 using UserApi.Models;
 using UserApi.Repository.UserRepository;
+using UserApi.Sender;
 using UserApi.Utils;
 
 namespace UserApi.Service.UserService
@@ -17,15 +19,15 @@ namespace UserApi.Service.UserService
     {
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
-        private readonly IPublishEndpoint _publishEndpoint;
-
-        private readonly ServiceBusSender _serviceBusSender;
-        public UserService(IUserRepository userRepository,   IConfiguration configuration, IPublishEndpoint publishEndpoint, ServiceBusSender serviceBusSender)
+        private readonly IMapper _mapper;
+        private readonly AzureServiceBusSender _azureServiceBusSender;
+        public UserService(IUserRepository userRepository,   IConfiguration configuration, IMapper mapper, AzureServiceBusSender azureServiceBusSender)
         {
             _userRepository = userRepository;
             _configuration = configuration;
-            _publishEndpoint = publishEndpoint;
-            _serviceBusSender = serviceBusSender;
+            _mapper = mapper;
+            _azureServiceBusSender= azureServiceBusSender;
+            
         }
 
         public async Task<string?> AuthenticateUserAsync(LoginRequestDto model)
@@ -33,20 +35,20 @@ namespace UserApi.Service.UserService
            var user=await _userRepository.GetUserByEmailAsync(model.Email);
             if (user == null) 
             {
-                throw new KeyNotFoundException("User not exist");
+                throw new NotFoundException("User not exist");
             }
 
             bool passwordCorrect= await _userRepository.CheckPasswordAsync(user, model.Password);
 
             if (!passwordCorrect) 
             {
-                throw new ArgumentException("Incorrect password");
+                throw new PasswordNotCorrect("Incorrect password");
             }
 
             var role=await _userRepository.GetUserRolesAsync(user);
             if (role != model.Role)
             {
-                throw new ArgumentException("Please choose the right role");
+                throw new RoleSelectedWrong("Please choose the right role");
             }
             var key = _configuration.GetSection("Jwt:SigningKey").Get<string>();
             var audience = _configuration.GetSection("Jwt:Audience").Get<string>();
@@ -61,6 +63,14 @@ namespace UserApi.Service.UserService
            return await _userRepository.EmailExistsAsync(email);
         }
 
+        public async Task<UserInfoResponseDto> GetUserInfoByIdAsync(string id)
+        {
+            var userInfo=await _userRepository.GetUserInfoByIdAsync(id);
+
+            var result=_mapper.Map<UserInfoResponseDto>(userInfo);
+            return result;  
+        }
+
         public async Task<IdentityResult> RegisterAdminAsync(RegisterRequestDto model)
         {
             if (await EmailExistsAsync(model.Email))
@@ -69,6 +79,11 @@ namespace UserApi.Service.UserService
                 throw new EmailAlreadyInUseException("Email already in use");
 
             }
+            if (model.Password != model.ConfirmPassword)
+            {
+                throw new PasswordNotMatch("Password not match");
+            }
+
             var user = new User
             {
                 UserName = model.Username,
@@ -92,6 +107,7 @@ namespace UserApi.Service.UserService
                 Role="Admin"
             };
             //Service Bus 
+            /*
             var jsonBody = JsonSerializer.Serialize(createUserEvent);
 
             // Create the message
@@ -103,7 +119,9 @@ namespace UserApi.Service.UserService
 
             // Send the message (assumes _serviceBusSender is injected ServiceBusSender)
             await _serviceBusSender.SendMessageAsync(message);
-
+            */
+            var queueName = _configuration["AzureServiceBus:QueueName:UserCreated"];
+            await _azureServiceBusSender.SendMessageAsync<CreateUserEvent>(queueName, createUserEvent);
             return result;
             //publish
 
@@ -119,6 +137,11 @@ namespace UserApi.Service.UserService
                 return IdentityResult.Failed(new IdentityError { Description = "Email already in use." });
 
             }
+            if (model.Password != model.ConfirmPassword)
+            {
+                throw new PasswordNotMatch("Password not match");
+            }
+
             var user = new User
             {
                 UserName = model.Username,
@@ -137,12 +160,14 @@ namespace UserApi.Service.UserService
            
         }
 
-        public async Task SendEmail(string email)
+        
+
+        public async Task<bool> SendEmail(string email)
         {
             var user = await _userRepository.FindByEmailAsync(email);
-            if (user != null)
+            if (user == null)
             {
-                throw new Exception("User does not exist");
+                throw new NotFoundException("User does not exist");
             }
 
             var token = await _userRepository.GenerateToken(user);
@@ -153,7 +178,39 @@ namespace UserApi.Service.UserService
                 UserName = user.UserName,
                 Token = token
             };
-            await _publishEndpoint.Publish(createResetPasswordEvent);
+            var queueName = _configuration["AzureServiceBus:QueueName:EmailVerify"];
+            await _azureServiceBusSender.SendMessageAsync<PasswordResetTokenGeneratedEvent>(queueName, createResetPasswordEvent);
+
+            return true;
+        }
+
+        public async Task<IdentityResult> UpdatePasswordAsync(ResetPasswordRequestDto model)
+        {
+            var user = await _userRepository.FindByEmailAsync(model.Email);
+            if (user != null)
+            {
+                throw new NotFoundException("User does not exist");
+            }
+            if (model.NewPassword != model.ConfirmNewPassword)
+            {
+                throw new PasswordNotMatch("Password not match");
+            }
+            var result=await _userRepository.ResetPasswordAsync(user, model.Token, model.NewPassword);
+
+            return result;
+
+        }
+
+        public async Task<UserInfoResponseDto> UpdateUserInfoByIdAsync(string userId, UpdateUserInfoDto model)
+        {
+            var user=await _userRepository.GetUserInfoByIdAsync(userId);
+
+            user.UserName = model.UserName?? user.UserName;
+            user.Bio=model.Bio;
+            await _userRepository.UpdateAsync(user);
+            var result = _mapper.Map<UserInfoResponseDto>(user);
+            return result;
+
         }
     }
 }

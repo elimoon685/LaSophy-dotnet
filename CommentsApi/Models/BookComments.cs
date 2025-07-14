@@ -10,12 +10,15 @@ namespace CommentsApi.Models
 
         public string Content  { get; set; }
         public string CreatedBy  { get; set; }
+        public string UserId { get; set; }
         public DateTime CreatedAt { get; set; }=DateTime.Now;
         public int BookId { get; set; }
         public BookInfo Book { get; set; }
         public int? ParentCommentId { get; set; }
         public BookComments ParentComment { get; set; }
         public List<BookComments> Replies { get; set; }
+
+        public List<CommentLike> CommentLikes { get; set; }
 
 
     }

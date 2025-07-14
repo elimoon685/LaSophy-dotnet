@@ -36,7 +36,11 @@ namespace CommentsApi.Exceptions
 
             else if (exceptions is KeyNotFoundException) { return StatusCodes.Status404NotFound; }
 
-            else if (exceptions is ArgumentException || exceptions is BookMetaDataSavedFailedException) { return StatusCodes.Status400BadRequest; }
+            else if (exceptions is ArgumentException || 
+                    exceptions is BookMetaDataSavedFailedException ||
+                    exceptions is BookNotExistException
+
+                ) { return StatusCodes.Status400BadRequest; }
 
             else { return StatusCodes.Status500InternalServerError; }
         }
@@ -51,7 +55,9 @@ namespace CommentsApi.Exceptions
 
             else if (exceptions is BookMetaDataSavedFailedException) return " Book already exist";
 
+
             else if (exceptions is SaveBookMetaDataException) return " Failed to save book";
+            else if (exceptions is BookNotExistException) return "Book id not exist";
             else
             {
                 return "Unexpected Error";

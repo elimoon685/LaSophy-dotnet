@@ -15,15 +15,16 @@ namespace UserApi.Exceptions
             var exceptions = exceptionHandlingFeature.Error;
             httpContext.Response.ContentType = "application/json";
             httpContext.Response.StatusCode = GetStatuscode(exceptions);
-
+            /*
             var errorResponse = new ErrorResponse(
                 GetStatuscode(exceptions),
                 GetErrorMessage(exceptions),
                 exceptions.GetType().Name,
                 exceptions.Message
                 );
-
-            await httpContext.Response.WriteAsync(JsonSerializer.Serialize(errorResponse));
+            */
+            var response=ApiResponse<string>.Fail(GetErrorMessage(exceptions),GetStatuscode(exceptions).ToString());
+            await httpContext.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
 
         private int GetStatuscode(System.Exception exceptions)
@@ -36,6 +37,14 @@ namespace UserApi.Exceptions
 
             else if(exceptions is EmailAlreadyInUseException) { return StatusCodes.Status400BadRequest;}
 
+            else if(exceptions is PasswordNotMatch) { return StatusCodes.Status400BadRequest; }
+
+            else if (exceptions is PasswordNotCorrect) { return StatusCodes.Status400BadRequest; }
+
+            else if (exceptions is NotFoundException) { return StatusCodes.Status400BadRequest; }
+
+            else if (exceptions is RoleSelectedWrong) { return StatusCodes.Status400BadRequest; }
+
             else { return StatusCodes.Status500InternalServerError; }
         }
         private string GetErrorMessage(Exception exceptions)
@@ -47,6 +56,14 @@ namespace UserApi.Exceptions
             else if (exceptions is ArgumentNullException) return "Argument can not be null";
 
             else if (exceptions is EmailAlreadyInUseException) return "Email already in use";
+
+            else if (exceptions is PasswordNotMatch) return "Make sure password match";
+
+            else if (exceptions is PasswordNotCorrect) return "Email or password not correct";
+
+            else if (exceptions is NotFoundException) return "user not found";
+
+            else if (exceptions is RoleSelectedWrong) return "Email or role not match";
 
             else
             {

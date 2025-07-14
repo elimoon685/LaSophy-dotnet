@@ -22,6 +22,31 @@ namespace CommentsApi.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("CommentsApi.Models.BookCollection", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BookId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CollectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookId");
+
+                    b.ToTable("BookCollects");
+                });
+
             modelBuilder.Entity("CommentsApi.Models.BookComments", b =>
                 {
                     b.Property<int>("CommentsId")
@@ -46,6 +71,10 @@ namespace CommentsApi.Migrations
 
                     b.Property<int?>("ParentCommentId")
                         .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("CommentsId");
 
@@ -89,6 +118,67 @@ namespace CommentsApi.Migrations
                     b.ToTable("Books");
                 });
 
+            modelBuilder.Entity("CommentsApi.Models.BookLike", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BookId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LikedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookId");
+
+                    b.ToTable("BookLike");
+                });
+
+            modelBuilder.Entity("CommentsApi.Models.CommentLike", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CommentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LikedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommentId");
+
+                    b.ToTable("CommentLike");
+                });
+
+            modelBuilder.Entity("CommentsApi.Models.BookCollection", b =>
+                {
+                    b.HasOne("CommentsApi.Models.BookInfo", "Book")
+                        .WithMany("Collections")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+                });
+
             modelBuilder.Entity("CommentsApi.Models.BookComments", b =>
                 {
                     b.HasOne("CommentsApi.Models.BookInfo", "Book")
@@ -107,14 +197,42 @@ namespace CommentsApi.Migrations
                     b.Navigation("ParentComment");
                 });
 
+            modelBuilder.Entity("CommentsApi.Models.BookLike", b =>
+                {
+                    b.HasOne("CommentsApi.Models.BookInfo", "Book")
+                        .WithMany("Likes")
+                        .HasForeignKey("BookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+                });
+
+            modelBuilder.Entity("CommentsApi.Models.CommentLike", b =>
+                {
+                    b.HasOne("CommentsApi.Models.BookComments", "Comment")
+                        .WithMany("CommentLikes")
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Comment");
+                });
+
             modelBuilder.Entity("CommentsApi.Models.BookComments", b =>
                 {
+                    b.Navigation("CommentLikes");
+
                     b.Navigation("Replies");
                 });
 
             modelBuilder.Entity("CommentsApi.Models.BookInfo", b =>
                 {
+                    b.Navigation("Collections");
+
                     b.Navigation("Comments");
+
+                    b.Navigation("Likes");
                 });
 #pragma warning restore 612, 618
         }

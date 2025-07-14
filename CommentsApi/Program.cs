@@ -1,9 +1,15 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using Azure.Messaging.ServiceBus;
 using CommentsApi;
 using CommentsApi.Exceptions;
 using CommentsApi.Repository;
-using CommentsApi.Services.BookCommentsServices;
+using CommentsApi.Repository.BookCommentRepository;
+using CommentsApi.Repository.InteractiveRepository;
+using CommentsApi.Repository.ToolRepository;
+using CommentsApi.Services.BookCommentService;
+using CommentsApi.Services.InteractiveServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -34,8 +40,11 @@ options.UseSqlServer(builder.Configuration.GetConnectionString("LaSophyCommentsD
 
 //Dependency injection
 
-builder.Services.AddScoped<IBookCommentsRepository, BookCommentsRepository>();
-builder.Services.AddScoped<IBookCommentsService, BookCommentsServices>();
+builder.Services.AddScoped<IBookCommentRepository, BookCommentRepository>();
+builder.Services.AddScoped<IBookCommentService, BookCommentService>();
+builder.Services.AddScoped<IInteractiveService, InteractiveService>();
+builder.Services.AddScoped<IInteractiveRepository, InteractiveReposotory>();
+builder.Services.AddScoped<IToolRepository, ToolRepository>();
 builder.Services.AddSingleton<GlobalExceptionsHandler>();
 
 //service bus
@@ -57,26 +66,28 @@ builder.Services.AddAuthentication(option =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SigningKey"]))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SigningKey"])),
     };
 });
-/*
 builder.Services.AddSingleton<ServiceBusClient>(provider =>
 {
     var config = provider.GetRequiredService<IConfiguration>();
     var connStr = config["AzureServiceBus:ConnectionString"];
     return new ServiceBusClient(connStr);
 });
-*/
-/*
+
 builder.Services.AddSingleton<ServiceBusSender>(provider =>
 {
     var client = provider.GetRequiredService<ServiceBusClient>();
     var queueName = provider.GetRequiredService<IConfiguration>()["AzureServiceBus:QueueName"];
     return client.CreateSender(queueName);
 });
-*/
 //autoMapper
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("UserPolicy", policy => policy.RequireRole("User"));
+});
 
 builder.Services.AddAutoMapper(typeof(Program));
 

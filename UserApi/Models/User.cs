@@ -6,5 +6,6 @@ namespace UserApi.Models
 
     {
         public DateTime CreatedAt = DateTime.UtcNow;
+        public string? Bio {  get; set; }
     }
 }

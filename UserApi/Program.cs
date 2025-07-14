@@ -16,6 +16,7 @@ using FluentValidation.AspNetCore;
 using System.Text.Json.Serialization;
 using UserApi.DTO;
 using Azure.Messaging.ServiceBus;
+using UserApi.Sender;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,7 +65,7 @@ builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRoleService, UserRoleService>();
 builder.Services.AddSingleton<GlobalExceptionHandler>();
-
+builder.Services.AddSingleton<AzureServiceBusSender>();
 builder.Services.AddAuthentication(option =>
 {
     option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -91,13 +92,15 @@ builder.Services.AddSingleton<ServiceBusClient>(provider =>
     var connStr = config["AzureServiceBus:ConnectionString"];
     return new ServiceBusClient(connStr);
 });
-
+/*
 builder.Services.AddSingleton<ServiceBusSender>(provider =>
 {
     var client = provider.GetRequiredService<ServiceBusClient>();
     var queueName = provider.GetRequiredService<IConfiguration>()["AzureServiceBus:QueueName"];
     return client.CreateSender(queueName);
 });
+*/
+//so if you have different queuename to send, so don't do that
 
 builder.Services.AddControllers()
         .AddFluentValidation(

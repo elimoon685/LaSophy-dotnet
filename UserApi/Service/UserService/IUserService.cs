@@ -10,7 +10,12 @@ namespace UserApi.Service.UserService
         Task<IdentityResult> RegisterUserAsync(RegisterRequestDto model);
         Task<string?> AuthenticateUserAsync(LoginRequestDto model);
         Task<bool> EmailExistsAsync(string email);
-        Task SendEmail(string eamil);
+        Task <bool>SendEmail(string eamil);
+        Task <UserInfoResponseDto> GetUserInfoByIdAsync(string id); 
+
+        Task<UserInfoResponseDto> UpdateUserInfoByIdAsync(string userId, UpdateUserInfoDto model);
+
+        Task<IdentityResult> UpdatePasswordAsync(ResetPasswordRequestDto model);
 
     }
 }

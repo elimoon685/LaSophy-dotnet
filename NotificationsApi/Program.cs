@@ -39,7 +39,7 @@ builder.Services.AddMassTransit(config =>
 
 });
 */
-builder.Services.AddSingleton<ISendEmailService, SendEmailService>();
+builder.Services.AddSingleton<ISendNotificationService, SendNotificationService>();
 builder.Services.AddSingleton<GlobalExceptionsHandler>();
 builder.Services.AddSingleton<ServiceBusClient>(provider =>
 {
@@ -55,6 +55,8 @@ builder.Services.AddSingleton<ServiceBusSender>(provider =>
     return client.CreateSender(queueName);
 });
 builder.Services.AddHostedService<CreateUserEventListener>();
+//builder.Services.AddHostedService<CreateReplyEventListener>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

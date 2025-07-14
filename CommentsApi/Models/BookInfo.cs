@@ -1,4 +1,6 @@
-﻿namespace CommentsApi.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace CommentsApi.Models
 {
     public class BookInfo
     {
@@ -10,6 +12,10 @@
         public string PdfPath {  get; set; }
 
         public string ImgPath { get; set; }
+        
+        public List<BookLike> Likes { get; set; }
+
+        public List<BookCollection> Collections { get; set; }
 
         public List<BookComments> Comments { get; set; }
         

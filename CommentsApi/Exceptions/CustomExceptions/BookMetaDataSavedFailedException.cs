@@ -9,4 +9,8 @@
     {
         public SaveBookMetaDataException(string message) : base(message) { }
     }
+    public class BookNotExistException : Exception
+    {
+        public BookNotExistException(string message) : base(message) { }
+    }
 }
