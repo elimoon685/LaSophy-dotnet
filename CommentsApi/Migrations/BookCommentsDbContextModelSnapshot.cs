@@ -44,7 +44,7 @@ namespace CommentsApi.Migrations
 
                     b.HasIndex("BookId");
 
-                    b.ToTable("BookCollects");
+                    b.ToTable("BookCollects", (string)null);
                 });
 
             modelBuilder.Entity("CommentsApi.Models.BookComments", b =>
@@ -82,7 +82,7 @@ namespace CommentsApi.Migrations
 
                     b.HasIndex("ParentCommentId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("CommentsApi.Models.BookInfo", b =>
@@ -115,7 +115,7 @@ namespace CommentsApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Books");
+                    b.ToTable("Books", (string)null);
                 });
 
             modelBuilder.Entity("CommentsApi.Models.BookLike", b =>
@@ -140,7 +140,7 @@ namespace CommentsApi.Migrations
 
                     b.HasIndex("BookId");
 
-                    b.ToTable("BookLike");
+                    b.ToTable("BookLike", (string)null);
                 });
 
             modelBuilder.Entity("CommentsApi.Models.CommentLike", b =>
@@ -165,7 +165,7 @@ namespace CommentsApi.Migrations
 
                     b.HasIndex("CommentId");
 
-                    b.ToTable("CommentLike");
+                    b.ToTable("CommentLike", (string)null);
                 });
 
             modelBuilder.Entity("CommentsApi.Models.BookCollection", b =>

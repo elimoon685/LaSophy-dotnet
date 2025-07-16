@@ -19,5 +19,7 @@ namespace CommentsApi.Services.BookCommentService
         Task<bool> AddBookInfo(BookMetaData bookInfo);
 
         Task <bool> DeleteCommentByIdAsync(int commentId);
+
+       
     }
 }

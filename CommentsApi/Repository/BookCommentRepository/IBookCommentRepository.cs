@@ -19,6 +19,10 @@ namespace CommentsApi.Repository.BookCommentRepository
 
         Task<bool> RemoveCommentAsync(BookComments comment);
 
+        Task <List<BookComments>> GetPotentiallyDeletedCommentTreeAsync(int commentId);
+
+        Task<bool> DeleteComments(List<BookComments> comments);
+
 
     }
 }

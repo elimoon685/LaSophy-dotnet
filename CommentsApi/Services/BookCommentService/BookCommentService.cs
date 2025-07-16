@@ -11,6 +11,7 @@ using AutoMapper;
 using CommentsApi.Exceptions.CustomExceptions;
 using CommentsApi.Repository.ToolRepository;
 using CommentsApi.DTO.Request;
+using CommentsApi.Utlis;
 
 namespace CommentsApi.Services.BookCommentService
 {
@@ -81,10 +82,11 @@ namespace CommentsApi.Services.BookCommentService
 
         public async Task<bool> DeleteCommentByIdAsync(int commentId)
         {
-            var comment = await _toolRepository.GetCommentById(commentId);
+            var commentsToDelete= await _bookCommentRepository.GetPotentiallyDeletedCommentTreeAsync(commentId);
 
-            var result= await _bookCommentRepository.RemoveCommentAsync(comment);
+            var commentsToDeleteDescending=commentsToDelete.OrderByDescending(c=>GetCommentsDepth.GetDepth(c,commentsToDelete)).ToList();
 
+            var result=await _bookCommentRepository.DeleteComments(commentsToDeleteDescending);
             return result;
         }
 

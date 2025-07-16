@@ -108,12 +108,13 @@ namespace CommentsApi.Controllers
             return StatusCode(200, ApiResponse<GetBookInfoResponseDto>.Success(result, "Get book info successfully"));
 
         }
-
+        //[Authorize(Policy = "UserPolicy")]
         [HttpDelete("delete-comment/{commentId}")]
 
         public async Task<ActionResult> DeleteCommentById(int commentId)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            //var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
 
             var deleteResult=await _bookCommentService.DeleteCommentByIdAsync(commentId);
 

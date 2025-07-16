@@ -26,8 +26,6 @@ namespace CommentsApi
            .HasForeignKey(c => c.ParentCommentId)
            .OnDelete(DeleteBehavior.Restrict);
             //why i change setnull to restrict
-            //why i change setnull to restrict
-            //why i change setnull to restrict
 
             modelBuilder.Entity<BookLike>()
            .HasOne(bl => bl.Book)
